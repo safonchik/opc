@@ -85,21 +85,22 @@ class ModbusTCPServer {
 }
 
 
-const rtu = new ModbusClient();
-const tcp = new ModbusTCPServer();
-const client = new ModbusClient();
-rtu.connectRTU("COM5");
-rtu.setListen([
+const mbRTUClient = new ModbusClient();
+const mbTCPClient = new ModbusClient();
+const mbTCPServer = new ModbusTCPServer();
+
+mbRTUClient.connectRTU("COM5");
+mbRTUClient.setListen([
     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
     // { id: 'i0', func: "readCoils", address: 3, count: 1 },
 ], 200)
-rtu.dataStream.subscribe("h0", data => {
-    tcp.write(data.address, data.value)
+mbRTUClient.dataStream.subscribe("h0", data => {
+    mbTCPServer.write(data.address, data.value)
 })
-client.connectTCP()
-client.setListen([
+mbTCPClient.connectTCP()
+mbTCPClient.setListen([
     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
 ], 200)
-client.dataStream.subscribe("h0", data => {
+mbTCPClient.dataStream.subscribe("h0", data => {
     console.log(data.value);
 })
