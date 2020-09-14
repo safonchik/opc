@@ -10,7 +10,7 @@ let h0 = 0;
 mbTCPClient.setListen([
     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
 ], 200, data => {
-    h0 = data.value;
+    h0 = data.value[0];
     //console.log(data.value); 
 })
 
