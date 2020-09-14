@@ -3,7 +3,7 @@ import { ModbusClient, ModbusTCPServer } from './modbus.js'
 
 const mbTCPClient = new ModbusClient();
 
-mbTCPClient.connectTCP(502, "10.8.0.4");
+mbTCPClient.connectTCP(502, "10.8.0.3");
 
 let h0 = 0;
 
