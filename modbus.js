@@ -1,120 +1,107 @@
 "use strict";
+import { EventEmitter } from "./eventEmitter.js";
+import Modbus from 'jsmodbus';
+import SerialPort from 'serialport';
+import net from 'net';
 
-//==============================================================
-// create an empty modbus client
-var ModbusRTU   = require ("modbus-serial");
-var client      = new ModbusRTU();
+const defaultOptions = {
+    baudRate: 115200,
+    parity: 'none',
+    stopbits: 1
+}
 
-var mbsStatus   = "Initializing...";    // holds a status of Modbus
-
-// Modbus 'state' constants
-var MBS_STATE_INIT          = "State init";
-var MBS_STATE_IDLE          = "State idle";
-var MBS_STATE_NEXT          = "State next";
-var MBS_STATE_GOOD_READ     = "State good (read)";
-var MBS_STATE_FAIL_READ     = "State fail (read)";
-var MBS_STATE_GOOD_CONNECT  = "State good (port)";
-var MBS_STATE_FAIL_CONNECT  = "State fail (port)";
-
-// Modbus configuration values
-var mbsId       = 0;
-var mbsScan     = 1000;
-var mbsTimeout  = 10000;
-var mbsState    = MBS_STATE_INIT;
-
-
-//==============================================================
-var connectClient = function()
-{
-    // set requests parameters
-    client.setID      (mbsId);
-    client.setTimeout (mbsTimeout);
-
-    // try to connect
-    client.connectRTUBuffered ("COM5", { baudRate: 115200, dataBits: 8, stopBits: 1, parity: "none" }) //, parity: "even"
-        .then(function()
-        {
-            mbsState  = MBS_STATE_GOOD_CONNECT;
-            mbsStatus = "Connected, wait for reading...";
-            console.log(mbsStatus);
-        })
-        .catch(function(e)
-        {
-            mbsState  = MBS_STATE_FAIL_CONNECT;
-            mbsStatus = e.message;
-            console.log(e);
+export class ModbusClient {
+    socket = null;
+    client = null;
+    // stream = new Readable({ read: () => true });
+    dataStream = new EventEmitter();
+    _opened = false;
+    constructor() {
+    }
+    connectTCP(port = 502, ip="127.0.0.1", id=1) {
+        this.socket = new net.Socket();
+        this.client = new Modbus.client.TCP(this.socket, id)
+        this.socket.connect({
+            'host': ip,
+            'port': port
         });
-};
-
-
-//==============================================================
-var readModbusData = function()
-{
-    // try to read data
-    client.readHoldingRegisters (0x0, 0)
-        .then(function(data)
-        {
-            mbsState   = MBS_STATE_GOOD_READ;
-            mbsStatus  = "success";
-            console.log(data.buffer);
+        this.socket.on("connect", () => {
+            this._opened = true;
+            console.log('TCP client opened');
         })
-        .catch(function(e)
-        {
-            mbsState  = MBS_STATE_FAIL_READ;
-            mbsStatus = e.message;
-            console.log(e);
-        });
-};
-
-
-//==============================================================
-var runModbus = function()
-{
-    var nextAction;
-    switch (mbsState)
-    {
-        case MBS_STATE_INIT:
-            nextAction = connectClient;
-            break;
-
-        case MBS_STATE_NEXT:
-            nextAction = readModbusData;
-            break;
-
-        case MBS_STATE_GOOD_CONNECT:
-            nextAction = readModbusData;
-            break;
-
-        case MBS_STATE_FAIL_CONNECT:
-            nextAction = connectClient;
-            break;
-
-        case MBS_STATE_GOOD_READ:
-            nextAction = readModbusData;
-            break;
-
-        case MBS_STATE_FAIL_READ:
-            if (client.isOpen)  { mbsState = MBS_STATE_NEXT;  }
-            else                { nextAction = connectClient; }
-            break;
-
-        default:
-            // nothing to do, keep scanning until actionable case
+    }
+    connectRTU(port, id = 1, options = defaultOptions) {
+        this.socket = new SerialPort(port, options)
+        this.client = new Modbus.client.RTU(this.socket, id)
+        this.socket.on("open", () => {
+            this._opened = true;
+            console.log('RTU client opened');
+        })
     }
 
-//    console.log();
-    console.log(mbsState);
-
-    // execute "next action" function if defined
-    if (nextAction !== undefined)
-    {
-        nextAction();
-        mbsState = MBS_STATE_IDLE;
+    setListen(listen, interval = 500, callback) {
+        setInterval(() => {
+            if (this._opened) {
+                listen.forEach((el) => {
+                    this.client[el.func](el.address, el.count).then((resp) => {
+                        const data = {
+                            id: el.id,
+                            timestamp: new Date(),
+                            func: el.func,
+                            address: el.address,
+                            count: el.count,
+                            value: resp.response.body.valuesAsArray
+                        }
+                        callback(data)
+                        this.dataStream.emit(el.id, data)
+                    }).catch(() => {
+                        this.socket.close()
+                    })
+                });
+            }
+        }, interval)
     }
+}
 
-    // set for next run
-    setTimeout (runModbus, mbsScan);
-};
 
-//==============================================================
-runModbus();
+export class ModbusTCPServer {
+    socket = null;
+    server = null;
+    _opened = false;
+
+    constructor(port = 502) {
+        this.socket = net.Server();
+        this.server = new Modbus.server.TCP(this.socket, { holding: Buffer.alloc(10000) });
+        this.socket.listen(port, '127.0.0.1');
+        this.server.on("connection", () => {
+            console.log('TCP server opened');
+            this._opened = true;
+        })
+    }
+    write(address, value) {
+        if (this._opened) {
+            this.server.holding.writeUInt16BE(value, address)
+        }
+    }
+}
+
+
+// const mbRTUClient = new ModbusClient();
+// const mbTCPClient = new ModbusClient();
+// const mbTCPServer = new ModbusTCPServer();
+
+// mbRTUClient.connectRTU("COM5");
+// mbRTUClient.setListen([
+//     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
+//     // { id: 'i0', func: "readCoils", address: 3, count: 1 },
+// ], 200)
+// mbRTUClient.dataStream.subscribe("h0", data => {
+//     mbTCPServer.write(data.address, data.value)
+// })
+// mbTCPClient.connectTCP()
+// mbTCPClient.setListen([
+//     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
+// ], 200)
+// mbTCPClient.dataStream.subscribe("h0", data => {
+//     console.log(data.value);
+// })
