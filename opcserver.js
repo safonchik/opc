@@ -22,7 +22,7 @@ export class OPCServer {
             dataType: type,
             value: {
                 get: function () {
-                    return new Variant({ dataType: DataType[type], value: getFn });
+                    return new Variant({ dataType: DataType[type], value: getFn() });
                 }
             }
         });
