@@ -11,7 +11,7 @@ mbTCPClient.setListen([
     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
 ], 200, data => {
     h0 = data.value;
-    // console.log(data.value);
+    //console.log(data.value); 
 })
 
 const variables = [{device: 'pr200', name: 'h0', type: 'Double', getFn: () => {
