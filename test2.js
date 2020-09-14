@@ -5,7 +5,7 @@ const mbRTUClient = new ModbusClient();
 const mbTCPClient = new ModbusClient();
 const mbTCPServer = new ModbusTCPServer();
 
-mbRTUClient.connectRTU("COM4");
+mbRTUClient.connectRTU("COM5");
 mbRTUClient.setListen([
     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
     // { id: 'i0', func: "readCoils", address: 3, count: 1 },

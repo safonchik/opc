@@ -1,5 +1,5 @@
-import { OPCServer } from './opcserver.js';
-import { ModbusClient, ModbusTCPServer } from './modbus.js';
+import { OPCServer } from './opcserver.js'
+import { ModbusClient, ModbusTCPServer } from './modbus.js'
 
 const mbTCPClient = new ModbusClient();
 
@@ -14,5 +14,8 @@ mbTCPClient.setListen([
     console.log(data.value);
 })
 
-const variables = [{device: 'pr200', name: 'h0', type: 'Double', getFn: () => h0}];
+const variables = [{device: 'pr200', name: 'h0', type: 'Double', getFn: () => {
+    console.log(h0);
+    return h0;
+}}];
 const opc = new OPCServer(variables);

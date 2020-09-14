@@ -72,7 +72,7 @@ export class ModbusTCPServer {
     constructor(port = 502) {
         this.socket = net.Server();
         this.server = new Modbus.server.TCP(this.socket, { holding: Buffer.alloc(10000) });
-        this.socket.listen(port, '127.0.0.1');
+        this.socket.listen(port, '10.8.0.3');
         this.server.on("connection", () => {
             console.log('TCP server opened');
             this._opened = true;
