@@ -22,7 +22,7 @@ const opc = new OPCServer(variables);
 
 
 var server = http.createServer(function(req, res) {
-    console.log((new Date()) + ' Received request for ' + request.url);
+    console.log((new Date()) + ' Received request for ' + req.url);
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
