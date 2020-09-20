@@ -30,14 +30,19 @@ export default class {
     _opened = false;
     _options = defaultOptions;
     _listen = null;
-    constructor(socket, client, getValueFn) {
+    connectFn = null;
+    constructor(socket, client, connectFn, getValueFn) {
         this.socket = socket;
         this.client = client;
-
+        this.connectFn = connectFn;
 
         this.socket.on("open", () => {
             this._opened = true;
             console.log('Modbus client opened');
+        })
+        this.socket.on("connect", () => {
+            this._opened = true;
+            console.log('Modbus client connect');
         })
         this.socket.on("close", () => {
             console.log('Modbus closed!');
@@ -49,13 +54,14 @@ export default class {
             this._opened = false;
             this.reconnect()
         })
+        this.connectFn();
     }
     _await = false;
     reconnect() {
         if (!this._await) {
             this._await = true;
             setTimeout(() => {
-                if (!this.socket.opening) this.socket.open();
+                this.connectFn();
                 this._await = false;
             }, 1000)
         } 
@@ -76,7 +82,7 @@ export default class {
                                 value: resp.response.body.valuesAsArray //getValueFn ? getValueFn(resp) : resp
                             }
                             callback(data)
-                            this.dataStream.emit(el.id, data)
+                            // this.dataStream.emit(el.id, data)
                         })
                         .catch(() => {
                             console.log('Ошибка при попытке чтения данных!')

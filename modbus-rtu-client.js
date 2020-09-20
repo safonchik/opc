@@ -12,7 +12,9 @@ export default class extends ModbusClient {
             stopBits: options.stopBits || 1,
         })
         const client = new Modbus.client.RTU(socket, options.id || 1)
-        super(socket, client, (data) => data.response.body)
+        super(socket, client, () => {
+            if (!socket.opening) socket.open();
+        })
     }
 }
 

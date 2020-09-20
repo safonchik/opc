@@ -6,23 +6,28 @@ export default class {
     server = null;
     _opened = false;
 
-    constructor(ip, port = 502) {
+    constructor(host, port = 502) {
         this.socket = net.Server();
         this.server = new Modbus.server.TCP(this.socket, { holding: Buffer.alloc(10) });
-        this.socket.listen(port, ip);
+        this.socket.listen(port, host);
         this.socket.on("connection", () => {
             console.log('TCP server opened');
             this._opened = true;
         })
         this.socket.on("close", () => {
-            console.log('TCP serverclosed!');
+            console.log('TCP server closed!');
             this._opened = false;
-            this.reconnect()
+            // this.reconnect()
         })
         this.socket.on("error", (err) => {
             console.log('TCP server error! Try reconnect...');
             this._opened = false;
-            this.reconnect()
+            // this.reconnect()
+        })
+        this.socket.on("listening", (err) => {
+            console.log('TCP listening...');
+            // this._opened = false;
+            // this.reconnect()
         })
     }
     _await = false;
