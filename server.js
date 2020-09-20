@@ -5,16 +5,28 @@ import http from 'http';
 import si from 'socket.io';
 
 const mbTCPClient = new ModbusTCPClient({ host: '10.8.0.2' });
+let
+    sequenceNumberByClient = new Map();
 
 let h0 = 0;
 const serv = si.listen(8080);
-serv.on('connection', socket => console.log(socket));
+serv.on('connection', socket => {
+    console.info(`Client connected [id=${socket.id}]`);
+    sequenceNumberByClient.set(socket, 1);
+    socket.on("disconnect", () => {
+        sequenceNumberByClient.delete(socket);
+        console.info(`Client gone [id=${socket.id}]`);
+    });
+});
 
 mbTCPClient.setListen([
     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
 ], 300, data => {
     console.log(data.value);
-    serv.emit('data', data.value[0])
+    for (const [client, sequenceNumber] of sequenceNumberByClient.entries()) {
+        client.emit("data", data.value[0]);
+        sequenceNumberByClient.set(client, sequenceNumber + 1);
+    }
 
     h0 = data.value[0];
 })
