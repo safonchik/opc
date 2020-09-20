@@ -10,9 +10,11 @@
   "type": "module",
   "license": "ISC",
   "dependencies": {
+    "http": "0.0.1-security",
     "jsmodbus": "^4.0.4",
     "modbus-serial": "^8.0.1",
     "node-opcua": "^2.14.0",
-    "node-opcua-samples": "^2.14.0"
+    "node-opcua-samples": "^2.14.0",
+    "websocket": "^1.0.32"
   }
 }
