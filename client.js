@@ -1,10 +1,9 @@
 import ModbusTCPServer from './modbus-tcp-server.js';
 import ModbusRTUClient from './modbus-rtu-client.js';
-import ModbusTCPClient from './modbus-tcp-client.js';
 
 
 const mbRTUClient = new ModbusRTUClient({port: "COM5"});
-const mbTCPServer = new ModbusTCPServer({host: '10.8.0.2'});
+const mbTCPServer = new ModbusTCPServer();
 
 let count = 0;
 mbRTUClient.setListen([

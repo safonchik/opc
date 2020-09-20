@@ -6,43 +6,22 @@ export default class {
     server = null;
     _opened = false;
 
-    constructor(host, port = 502) {
-        this.socket = net.Server();
-        this.server = new Modbus.server.TCP(this.socket, { holding: Buffer.alloc(10) });
-        this.socket.listen(port, host);
-        this.socket.on("connection", () => {
-            console.log('TCP server opened');
-            this._opened = true;
-        })
-        this.socket.on("close", () => {
-            console.log('TCP server closed!');
-            this._opened = false;
-            // this.reconnect()
-        })
-        this.socket.on("error", (err) => {
-            console.log('TCP server error! Try reconnect...');
-            this._opened = false;
-            // this.reconnect()
+    constructor(options = {}) {
+        this.socket = net.createServer(socket => {
+            socket.on("error", err => console.log('TCP server: ошибка чтения!'));
+            socket.on("close", err => console.log('TCP server: соединение закрыто'));
         })
         this.socket.on("listening", (err) => {
             console.log('TCP listening...');
-            // this._opened = false;
-            // this.reconnect()
         })
-    }
-    _await = false;
-    reconnect() {
-        if (!this._await) {
-            this._await = true;
-            setTimeout(() => {
-                if (!this.socket.opening) this.socket.open();
-                this._await = false;
-            }, 1000)
-        } 
+        this.server = new Modbus.server.TCP(this.socket, { holding: Buffer.alloc(10000) });
+        this.socket.listen(options.port || 502, () => {
+            console.log('server is listening');
+        });
     }
     write(address, value) {
-        if (this._opened) {
-            this.server.holding.writeUInt16BE(value, address)
-        }
+        // if (this._opened) {
+        this.server.holding.writeUInt16BE(value, address)
+        // }
     }
 }
