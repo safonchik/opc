@@ -7,11 +7,15 @@ import si from 'socket.io';
 const mbTCPClient = new ModbusTCPClient({ host: '10.8.0.2' });
 
 let h0 = 0;
+const serv = si.listen(8080);
+serv.on('connection', socket => console.log(socket));
 
 mbTCPClient.setListen([
     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
 ], 300, data => {
     console.log(data.value);
+    serv.emit('data', data.value[0])
+
     h0 = data.value[0];
 })
 
@@ -53,8 +57,6 @@ const opc = new OPCServer(variables);
 //     // response.end();
 // });
 
-const serv = si.listen(8080);
-serv.on('connection', socket => console.log(socket));
 
 // var server = http.createServer(function(req, res) {
 //     console.log((new Date()) + ' Received request for ' + req.url);
