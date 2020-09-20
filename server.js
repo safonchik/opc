@@ -26,6 +26,8 @@ var server = http.createServer(function(req, res) {
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Headers': "Origin, X-Requested-With, Content-Type, Accept, " + "X-CSRF-TOKEN",
         'Access-Control-Max-Age': 2592000, // 30 days
         /** add other headers as per requirement */
       };
