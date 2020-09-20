@@ -48,7 +48,7 @@ var server = http.createServer(function(req, res) {
     // response.writeHead(404);
     // response.end();
 });
-server.listen(8080, '82.146.60.164', function() {
+server.listen(8080, function() {
     console.log((new Date()) + ' Server is listening on port 8080');
 });
  
