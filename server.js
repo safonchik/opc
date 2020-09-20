@@ -21,7 +21,7 @@ serv.on('connection', socket => {
 
 mbTCPClient.setListen([
     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
-], 300, data => {
+], 200, data => {
     console.log(data.value);
     for (const [client, sequenceNumber] of sequenceNumberByClient.entries()) {
         client.emit("data", data.value[0]);
