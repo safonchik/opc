@@ -1,9 +1,8 @@
 import { OPCServer } from './opcserver.js'
-import { ModbusClient, ModbusTCPServer } from './modbus.js'
+import ModbusTCPClient from './modbus-tcp-client';
 
-const mbTCPClient = new ModbusClient();
+const mbTCPClient = new ModbusTCPClient('10.8.0.3');
 
-mbTCPClient.connectTCP(502, "10.8.0.3");
 
 let h0 = 0;
 
