@@ -64,10 +64,35 @@ export default class {
                 this.connectFn();
                 this._await = false;
             }, 1000)
-        } 
+        }
+    }
+
+    writeSingleRegister(address, value) {
+        this.write('writeSingleRegister', address, value);
+    }
+    writeSingleCoil(address, value) {
+        this.write('writeSingleCoil', address, value);
+    }
+    writeMultipleRegisters(address, values) {
+        this.write('writeMultipleRegisters', address, values);
+    }
+    writeMultipleCoils(address, values) {
+        this.write('writeMultipleCoils', address, values);
+    }
+
+    write(funcName, address, value) {
+        if (this._opened) {
+            this.client[funcName](address, value).then(function (resp) {
+                console.log(`Modbus TX (singleRegister) to ${data.address}: ${value}`)
+                console.log(resp)
+            }).fail(function (err) {
+                console.log(err)
+            })
+        }
     }
 
     setListen(listen, interval = 500, callback) {
+        let cnt = 0;
         const i = setInterval(() => {
             if (this._opened) {
                 listen.forEach((el) => {
@@ -82,10 +107,13 @@ export default class {
                                 value: resp.response.body.valuesAsArray //getValueFn ? getValueFn(resp) : resp
                             }
                             callback(data)
+                            console.log(`Modbus RX (${data.func}) №${cnt} from ${data.address}/${data.count}: ${data.value}`)
+                            cnt++;
                             // this.dataStream.emit(el.id, data)
                         })
-                        .catch(() => {
+                        .catch((error) => {
                             console.log('Ошибка при попытке чтения данных!')
+                            console.log(error);
                             // this._opened = false;
                         })
                 });
