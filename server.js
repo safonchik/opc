@@ -21,7 +21,7 @@ const variables = [{device: 'pr200', name: 'h0', type: 'Double', getFn: () => {
 const opc = new OPCServer(variables);
 
 
-var server = http.createServer(function(request, response) {
+var server = http.createServer(function(req, res) {
     console.log((new Date()) + ' Received request for ' + request.url);
     const headers = {
         'Access-Control-Allow-Origin': '*',
