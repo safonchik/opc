@@ -4,7 +4,9 @@ import ModbusRTUClient from './modbus-rtu-client.js';
 
 const mbRTUClient = new ModbusRTUClient({port: "COM5"});
 const mbTCPServer = new ModbusTCPServer();
-mbTCPServer.onPostWriteSingleRegister = (data) => console.log(data);
+mbTCPServer.onPostWriteSingleRegister = (address, data) => {
+    mbRTUClient.writeSingleRegister(address, data);
+};
 
 mbRTUClient.setListen([
     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },

@@ -23,7 +23,7 @@ export default class {
         });
         this.server.on("postWriteSingleRegister", d => {
             console.log(`Modbus TCP RX (postWriteSingleRegister): ${d.body.value} `)
-            if (typeof this.onPostWriteSingleRegister === 'function') this.onPostWriteSingleRegister(d.body.value);
+            if (typeof this.onPostWriteSingleRegister === 'function') this.onPostWriteSingleRegister(d.body.address, d.body.value);
         });
         this.server.on("connection", (conn) => console.log("TCP server: произведено подключение клиента!"))
     }
