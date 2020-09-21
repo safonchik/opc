@@ -83,9 +83,9 @@ export default class {
     write(funcName, address, value) {
         if (this._opened) {
             this.client[funcName](address, value).then(function (resp) {
-                console.log(`Modbus TX (singleRegister) to ${data.address}: ${value}`)
+                console.log(`Modbus TX (singleRegister) to ${address}: ${value}`)
                 console.log(resp)
-            }).fail(function (err) {
+            }).catch(function (err) {
                 console.log(err)
             })
         }

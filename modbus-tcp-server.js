@@ -3,8 +3,10 @@ import net from 'net';
 
 export default class {
     socket = null;
-    server = new Modbus.server.TCP();
+    server = null;
+    // server = new Modbus.server.TCP();
     _opened = false;
+    onPostWriteSingleRegister = undefined;
 
     constructor(options = {}) {
         this.socket = net.createServer(socket => {
@@ -19,6 +21,11 @@ export default class {
         this.socket.listen(options.port || 502, () => {
             console.log('server is listening');
         });
+        this.server.on("postWriteSingleRegister", d => {
+            console.log(`Modbus TCP RX (postWriteSingleRegister): ${d.body.value} `)
+            if (typeof this.onPostWriteSingleRegister === 'function') this.onPostWriteSingleRegister(d.body.value);
+        });
+        this.server.on("connection", (conn) => console.log("TCP server: произведено подключение клиента!"))
     }
     send(address, value) {
         // if (this._opened) {
@@ -42,9 +49,9 @@ export default class {
             this.emit(funcName, (address, value).then(function (resp) {
                 console.log(`Modbus TX (singleRegister) to ${data.address}: ${value}`)
                 console.log(resp)
-              })).fail(function (err) {
+            })).catch(function (err) {
                 console.log(err)
-              })
+            })
         }
     }
 }
