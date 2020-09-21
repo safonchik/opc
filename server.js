@@ -4,13 +4,11 @@ import websocket from 'websocket';
 import http from 'http';
 import si from 'socket.io';
 
-const mbTCPClient = new ModbusTCPClient({ host: '10.8.0.2' });
-let
-    sequenceNumberByClient = new Map();
 
+let sequenceNumberByClient = new Map();
 let h0 = 0;
-const serv = si.listen(8080);
-serv.on('connection', socket => {
+
+si.listen(8080).on('connection', socket => {
     console.info(`Client connected [id=${socket.id}]`);
     sequenceNumberByClient.set(socket, 1);
     socket.on("disconnect", () => {
@@ -19,6 +17,13 @@ serv.on('connection', socket => {
     });
 });
 
+const mbTCPClient = new ModbusTCPClient({ host: '10.8.0.2' });
+let v = 0;
+setInterval(() => {
+    if (v === 0) v = 1; else v = 0;
+    mbTCPClient.writeSingleRegister(512, v)
+
+}, 1000);
 mbTCPClient.setListen([
     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
 ], 300, data => {
