@@ -12,7 +12,6 @@ let v = 0;
 si.listen(8080).on('connection', socket => {
     console.info(`Client connected [id=${socket.id}]`);
     socket.on("data", d => {
-        console.log('websocket принимает данные!')
         if (v === 0) v = 1; else v = 0;
         mbTCPClient.writeSingleRegister(513, v)
     });

@@ -84,7 +84,6 @@ export default class {
         if (this._opened) {
             this.client[funcName](address, value).then(function (resp) {
                 console.log(`Modbus TX (singleRegister) to ${address}: ${value}`)
-                console.log(resp)
             }).catch(function (err) {
                 console.log(err)
             })
