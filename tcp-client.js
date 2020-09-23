@@ -1,6 +1,6 @@
 import ModbusTCPClient from './modbus-tcp-client.js';
 
-const mbTCPClient = new ModbusTCPClient({host: '127.0.0.1'});
+const mbTCPClient = new ModbusTCPClient({host: '10.8.0.3'});
 
 mbTCPClient.setListen([
     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },

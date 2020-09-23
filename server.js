@@ -3,6 +3,7 @@ import ModbusTCPClient from './modbus-tcp-client.js';
 import websocket from 'websocket';
 import http from 'http';
 import si from 'socket.io';
+import { ModbusTCPServer } from 'jsmodbus';
 
 
 let sequenceNumberByClient = new Map();
@@ -22,22 +23,31 @@ si.listen(8080).on('connection', socket => {
     });
 });
 
-const mbTCPClient = new ModbusTCPClient({ host: '10.8.0.2' });
-// setInterval(() => {
-//     mbTCPClient.writeSingleRegister(513, v)
-
-// }, 1000);
-mbTCPClient.setListen([
-    { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
-], 300, data => {
+const mbTCPClient = new ModbusTCPClient({ host: '10.8.0.3', port: 502 });
+const mbTCPServer = new ModbusTCPServer()
+mbTCPServer.onPostWriteSingleRegister = (address, data) => {
     console.log(data.value);
     for (const [client, sequenceNumber] of sequenceNumberByClient.entries()) {
-        client.emit("data", data.value[0]);
+        client.emit("data", data[0]);
         sequenceNumberByClient.set(client, sequenceNumber + 1);
     }
 
     h0 = data.value[0];
-})
+    // mbRTUClient.writeSingleRegister(address, data);
+};
+// mbTCPClient.setListen([
+//     { id: 'h0', func: "readHoldingRegisters", address: 0, count: 1 },
+// ], 300, data => {
+//     console.log(data.value);
+//     for (const [client, sequenceNumber] of sequenceNumberByClient.entries()) {
+//         client.emit("data", data.value[0]);
+//         sequenceNumberByClient.set(client, sequenceNumber + 1);
+//     }
+
+//     h0 = data.value[0];
+// })
+
+
 
 const variables = [{
     device: 'pr200', name: 'h0', type: 'Double', getFn: () => {
