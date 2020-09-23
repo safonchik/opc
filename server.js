@@ -23,7 +23,7 @@ si.listen(8080).on('connection', socket => {
     });
 });
 
-const mbTCPClient = new ModbusTCPClient({ host: '10.8.0.3', port: 502 });
+// const mbTCPClient = new ModbusTCPClient({ host: '10.8.0.3', port: 502 });
 const mbTCPServer = new ModbusTCPServer()
 mbTCPServer.onPostWriteSingleRegister = (address, data) => {
     console.log(data.value);
